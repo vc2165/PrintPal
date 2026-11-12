@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#ffffff">
+<meta name="color-scheme" content="light">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' data: blob:; form-action 'none'; base-uri 'none'">
+<title>PrintPal</title>
+<style>
+:root{--accent:#1f5fbf;--accent-soft:#e8f0fc;--text:#16202e;--muted:#5d6b7e;--line:#e3e8ef;--bg:#f6f8fb;--card:#fff;--danger:#c0392b;--ok:#1e8a4c;--warn:#b26a00;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.screen.on{display:flex}
+header{display:flex;align-items:center;gap:8px;padding:calc(var(--safe-top) + 10px) 14px 10px;background:#fff;border-bottom:1px solid var(--line);min-height:56px}
+header h1{font-size:19px;margin:0;font-weight:650;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{border:0;background:none;width:40px;height:40px;border-radius:20px;display:grid;place-items:center;color:var(--text)}
+.iconbtn:active{background:#eef1f5}
+.iconbtn svg{width:24px;height:24px}
+main{flex:1;overflow-y:auto;padding:14px 14px 24px}
+.foot{padding:10px 14px calc(var(--safe-bottom) + 10px);background:#fff;border-top:1px solid var(--line);display:flex;gap:10px}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-weight:600;background:var(--accent);color:#fff;flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px}
+.btn:disabled{opacity:.45}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn.plain{background:#fff;color:var(--text);border:1px solid var(--line)}
+.btn.small{padding:8px 12px;min-height:38px;font-size:14px;flex:0 0 auto}
+.btn svg{width:20px;height:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.card h2{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:650}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 14px;text-align:left;display:flex;flex-direction:column;gap:10px;min-height:120px}
+.tile:active{background:#f3f6fb}
+.tile .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.tile .ic svg{width:26px;height:26px}
+.tile b{font-size:16px}
+.tile span{color:var(--muted);font-size:13px;line-height:1.3}
+.row{display:flex;align-items:center;gap:10px}
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:550}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-size:14px}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+input[type=text],input[type=url]{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;outline:none}
+input[type=text]:focus,input[type=url]:focus{border-color:var(--accent)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0}
+.toggle input{width:44px;height:26px;appearance:none;background:#cfd7e2;border-radius:13px;position:relative;transition:.15s;flex:0 0 auto;margin:0}
+.toggle input::after{content:"";position:absolute;width:20px;height:20px;border-radius:10px;background:#fff;top:3px;left:3px;transition:.15s}
+.toggle input:checked{background:var(--accent)}
+.toggle input:checked::after{left:21px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.empty{text-align:center;padding:26px 10px;color:var(--muted)}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#e9edf3}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .x{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:13px;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:16px;line-height:1}
+.addtile{border:1.5px dashed #b9c4d3;background:#fff;color:var(--accent);display:grid;place-items:center;font-weight:600;font-size:13px;border-radius:10px;aspect-ratio:1}
+.pages{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px}
+.pages canvas{flex:0 0 auto;height:170px;background:#fff;box-shadow:0 1px 4px rgba(20,30,50,.18);border-radius:2px}
+.filecard{display:flex;gap:12px;align-items:center}
+.filecard .badge{width:48px;height:56px;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:12px;color:#fff;background:#6b7a90;flex:0 0 auto}
+.filecard .meta{flex:1;min-width:0}
+.filecard .meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.docprev{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;font-size:12px}
+.docprev img{max-width:100%}
+.docprev table{border-collapse:collapse}
+.docprev td,.docprev th{border:1px solid #d5dbe4;padding:2px 5px;white-space:nowrap}
+.job{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.job:first-of-type{border-top:0}
+.job .meta{flex:1;min-width:0}
+.job .meta b{display:block;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{font-size:12px;font-weight:650;padding:3px 9px;border-radius:999px;background:#eef1f5;color:var(--muted);white-space:nowrap}
+.pill.printing,.pill.queued,.pill.preparing{background:#e8f0fc;color:var(--accent)}
+.pill.done{background:#e5f5ec;color:var(--ok)}
+.pill.failed,.pill.blocked{background:#fbeaea;color:var(--danger)}
+.linkbtn{border:0;background:none;color:var(--accent);font-weight:600;padding:6px 4px}
+.list .item{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
+.list .item:first-child{border-top:0}
+.list .item .meta{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scanpages{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
+.spage{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px;text-align:center}
+.spage img{width:100%;aspect-ratio:.72;object-fit:contain;background:#f1f3f6;border-radius:4px;display:block}
+.spage .ctl{display:flex;justify-content:space-between;margin-top:4px}
+.spage .ctl button{border:0;background:none;width:30px;height:30px;border-radius:15px;color:var(--muted);font-size:16px}
+.spage .n{font-size:12px;color:var(--muted)}
+#editor{background:#10151d;color:#fff}
+#editor header{background:#10151d;border-color:#232b37;color:#fff}
+#editor .iconbtn{color:#fff}
+#editStage{flex:1;position:relative;overflow:hidden;touch-action:none}
+#editCanvas{position:absolute}
+#editSvg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.handle{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:22px;touch-action:none}
+.handle::after{content:"";position:absolute;inset:12px;border-radius:10px;background:rgba(31,95,191,.35);border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+#editor .foot{background:#10151d;border-color:#232b37;flex-direction:column}
+#editor .seg button{background:#1d2532;border-color:#2c3646;color:#dfe6f0}
+#editor .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.edtools{display:flex;gap:8px;justify-content:space-between;align-items:center}
+#busy{position:fixed;inset:0;background:rgba(15,20,30,.38);display:none;place-items:center;z-index:50}
+#busy.on{display:grid}
+#busy div{background:#fff;border-radius:16px;padding:18px 22px;display:flex;gap:12px;align-items:center;font-weight:550;max-width:80vw}
+.spin{width:22px;height:22px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite;flex:0 0 auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+#toast{position:fixed;left:50%;bottom:calc(var(--safe-bottom) + 90px);transform:translateX(-50%) translateY(20px);background:#1d2532;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:60;max-width:88vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.hint{background:#fff8e6;border:1px solid #f1dfb2;color:#6b4e00;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.svc{display:flex;align-items:center;gap:10px;padding:8px 0}
+.svc .dot{width:10px;height:10px;border-radius:5px;background:var(--ok)}
+ol.steps{margin:0;padding-left:20px}
+ol.steps li{margin-bottom:6px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<section class="screen on" id="home">
+  <header>
+    <h1>PrintPal</h1>
+    <button class="iconbtn" data-go="setup" aria-label="Printer setup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </header>
+  <main>
+    <div class="tiles">
+      <button class="tile" data-go="photos"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5L6 21"/></svg></div><b>Photos</b><span>Gallery photos, collages, passport size</span></button>
+      <button class="tile" data-go="docs"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></div><b>Documents</b><span>PDF, Word, Excel, text</span></button>
+      <button class="tile" data-go="web"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><b>Web page</b><span>Print any link</span></button>
+      <button class="tile" data-go="scan"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></svg></div><b>Scan</b><span>Camera to PDF, print or share</span></button>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:6px"><h2 style="flex:1;margin:0">Recent prints</h2><button class="linkbtn small" id="clearHistory">Clear</button></div>
+      <div id="jobs"></div>
+    </div>
+    <p class="muted small" style="text-align:center">Tip: in any app, tap <b>Share → PrintPal</b> to print a photo, PDF or link straight away.</p>
+  </main>
+</section>
+
+<!-- ============ PHOTOS ============ -->
+<section class="screen" id="photos">
+  <header><button class="iconbtn back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h1>Print photos</h1></header>
+  <main>
+    <div class="card">
+      <h2>Photos</h2>
+      <div class="thumbs" id="photoThumbs"></div>
+    </div>
+    <div class="card">
+      <h2>Layout</h2>
+      <div class="field"><label>Paper</label><div class="seg" data-opt="ph.paper"><button data-v="A4">A4</button><button data-v="Letter">Letter</button><button data-v="4x6">4×6 in</button><button data-v="A5">A5</button></div></div>
+      <div class="field"><label>Photos per page</label><div class="seg" data-opt="ph.per"><button data-v="1">1</button><button data-v="2">2</button><button data-v="4">4</button><button data-v="6">6</button><button data-v="9">9</button><button data-v="passport">Passport 35×45</button><button data-v="stamp">Stamp 25×30</button></div></div>
+      <div class="field"><label>Page</label><div class="seg" data-opt="ph.orient"><button data-v="portrait">Portrait</button><button data-v="landscape">Landscape</button></div></div>
+      <div class="field"><label>Each photo</label><div class="seg" data-opt="ph.fit"><button data-v="fill">Fill (crop edges)</button><button data-v="fit">Fit (whole photo)</button></div></div>
+      <div class="field"><label>Margins</label><div class="seg" data-opt="ph.margin"><button data-v="none">None</button><button data-v="small">Small</button><button data-v="large">Large</button></div></div>
+      <div class="field toggle"><span>Repeat each photo to fill its page</span><input type="checkbox" data-chk="ph.repeat"></div>
+      <div class="field toggle"><span>Turn photos to fit the space</span><input type="checkbox" data-chk="ph.rotate"></div>
+      <div class="field toggle"><span>Black &amp; white</span><input type="checkbox" data-chk="ph.bw"></div>
+    </div>
+    <div class="card">
+      <div class="row"><h2 style="flex:1;margin:0">Preview</h2><span class="muted small" id="photoPageCount"></span></div>
+      <div class="pages" id="photoPages"></div>
+    </div>
+  </main>
+  <div class="foot"><button class="btn" id="photoPrint" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Print</button></div>
+</section>
+
+<!-- ============ DOCUMENTS ============ -->
+<section class="screen" id="docs">
+  <header><button class="iconbtn back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h1>Print a document</h1></header>
+  <main>
+    <div class="card" id="docPickCard">
+      <div class="empty" id="docEmpty">
+        <p style="margin-top:0">PDF, Word (.docx), Excel (.xlsx, .xls, .csv), text or HTML files.</p>
+        <button class="btn" id="docPick" style="max-width:260px;margin:0 auto">Choose a file</button>
+      </div>
+      <div class="filecard hidden" id="docFile">
+        <div class="badge" id="docBadge">PDF</div>
+        <div class="meta"><b id="docName"></b><span class="muted small" id="docInfo"></span></div>
+        <button class="linkbtn" id="docChange">Change</button>
+      </div>
+    </div>
+    <div class="card hidden" id="docSheetsCard">
+      <h2>Sheets to print</h2>
+      <div id="docSheets"></div>
+    </div>
+    <div class="card hidden" id="docOptsCard">
+      <h2>Options</h2>
+      <div class="field"><label>Paper</label><div class="seg" data-opt="doc.paper"><button data-v="">Printer default</button><button data-v="A4">A4</button><button data-v="Letter">Letter</button><button data-v="Legal">Legal</button></div></div>
+      <div class="field"><label>Colour</label><div class="seg" data-opt="doc.color"><button data-v="">Printer default</button><button data-v="color">Colour</button><button data-v="bw">Black &amp; white</button></div></div>
+      <div class="field" id="docOrientField"><label>Page</label><div class="seg" data-opt="doc.orient"><button data-v="portrait">Portrait</button><button data-v="landscape">Landscape</button></div></div>
+      <div class="field hidden" id="docScaleField"><label>Text size</label><div class="seg" data-opt="doc.scale"><button data-v="100">100%</button><button data-v="80">80%</button><button data-v="65">65%</button><button data-v="50">50%</button></div></div>
+      <div class="field toggle hidden" id="docGridField"><span>Gridlines</span><input type="checkbox" data-chk="doc.grid"></div>
+      <p class="muted small" style="margin:8px 0 0">Copies, page range and double-sided are chosen on the next screen.</p>
+    </div>
+    <div class="card hidden" id="docPrevCard">
+      <h2>Preview</h2>
+      <div class="docprev" id="docPrev"></div>
+    </div>
+  </main>
+  <div class="foot"><button class="btn" id="docPrint" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Print</button></div>
+</section>
+
+<!-- ============ WEB ============ -->
+<section class="screen" id="web">
+  <header><button class="iconbtn back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h1>Print a web page</h1></header>
+  <main>
+    <div class="card">
+      <div class="field"><label>Web address</label>
+        <div class="row"><input type="url" id="webUrl" placeholder="https://…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn small ghost" id="webPaste">Paste</button></div>
+      </div>
+      <div class="field"><label>Paper</label><div class="seg" data-opt="web.paper"><button data-v="">Printer default</button><button data-v="A4">A4</button><button data-v="Letter">Letter</button></div></div>
+      <div class="field"><label>Colour</label><div class="seg" data-opt="web.color"><button data-v="">Printer default</button><button data-v="color">Colour</button><button data-v="bw">Black &amp; white</button></div></div>
+      <p class="muted small" style="margin:6px 0 0">The page loads in the background (about 2–5 seconds), then the print screen opens with a preview.</p>
+    </div>
+    <div class="card" id="webRecentCard">
+      <h2>Recent links</h2>
+      <div class="list" id="webRecent"></div>
+    </div>
+  </main>
+  <div class="foot"><button class="btn" id="webPrint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Load &amp; print</button></div>
+</section>
+
+<!-- ============ SCAN ============ -->
+<section class="screen" id="scan">
+  <header><button class="iconbtn back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h1>Scan</h1></header>
+  <main>
+    <div class="card">
+      <div class="row" style="gap:8px">
+        <button class="btn" id="scanCamera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Take photo</button>
+        <button class="btn ghost" id="scanGallery">From gallery</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:10px"><h2 style="flex:1;margin:0">Pages</h2><span class="muted small" id="scanCount"></span></div>
+      <div id="scanPages" class="scanpages"></div>
+      <div class="empty" id="scanEmpty">Take a photo of each page. You can crop, straighten and clean it up before saving.</div>
+    </div>
+    <div class="card" id="scanOpts">
+      <div class="field"><label>File name</label><input type="text" id="scanName"></div>
+      <div class="field"><label>PDF page size</label><div class="seg" data-opt="scan.paper"><button data-v="A4">A4</button><button data-v="Letter">Letter</button><button data-v="Original">Same as scan</button></div></div>
+    </div>
+  </main>
+  <div class="foot">
+    <button class="btn ghost" id="scanSave" disabled>Save PDF</button>
+    <button class="btn ghost" id="scanShare" disabled>Share</button>
+    <button class="btn" id="scanPrint" disabled>Print</button>
+  </div>
+</section>
+
+<!-- ============ SCAN EDITOR ============ -->
+<section class="screen" id="editor">
+  <header><button class="iconbtn" id="edCancel" aria-label="Cancel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button><h1>Adjust page</h1>
+    <button class="iconbtn" id="edRotate" aria-label="Rotate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></header>
+  <div id="editStage"><canvas id="editCanvas"></canvas><svg id="editSvg"><polygon id="editPoly" fill="rgba(31,95,191,.18)" stroke="#4d8df0" stroke-width="2"/></svg></div>
+  <div class="foot">
+    <div class="edtools"><span class="small" style="color:#a9b4c4">Drag the corners to the page edges</span><button class="linkbtn" id="edReset" style="color:#8fb6ff">Whole photo</button></div>
+    <div class="seg" data-opt="scan.filter"><button data-v="enhance">Enhanced</button><button data-v="original">Original</button><button data-v="grey">Grey</button><button data-v="bw">Black &amp; white</button></div>
+    <button class="btn" id="edDone">Use this page</button>
+  </div>
+</section>
+
+<!-- ============ SETUP ============ -->
+<section class="screen" id="setup">
+  <header><button class="iconbtn back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h1>Printer setup</h1></header>
+  <main>
+    <div class="card">
+      <h2>How it works</h2>
+      <p style="margin-top:0">PrintPal sends everything through Android's own printing. Your printer appears on the print screen once a <b>print service</b> on this phone can see it.</p>
+      <ol class="steps">
+        <li>Connect the phone to the <b>same Wi-Fi</b> as the printer, and switch the printer on.</li>
+        <li>Make sure a print service is <b>turned on</b> in Print settings (below).</li>
+        <li>Print anything. On the print screen, tap the printer name at the top and pick yours.</li>
+      </ol>
+      <button class="btn" id="openPrintSettings" style="margin-top:6px">Open print settings</button>
+    </div>
+    <div class="card">
+      <h2>Print services on this phone</h2>
+      <div id="services"></div>
+    </div>
+    <div class="card">
+      <h2>Printer not showing up?</h2>
+      <p style="margin-top:0" class="small">Most Wi-Fi printers work with <b>Mopria Print Service</b>. If yours still doesn't appear, install your printer brand's plugin:</p>
+      <div class="list" id="plugins"></div>
+      <p class="small muted" style="margin-bottom:0">Still missing? Print the printer's network page and check it's on the same Wi-Fi. Many printers also have a Wi-Fi Direct mode that the print services can find.</p>
+    </div>
+  </main>
+</section>
+
+<input type="file" id="filePhotos" accept="image/*" multiple class="hidden">
+<input type="file" id="fileDoc" accept=".pdf,.docx,.xlsx,.xls,.xlsm,.ods,.csv,.txt,.text,.log,.md,.html,.htm,application/pdf,text/*,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,image/*" class="hidden">
+<input type="file" id="fileScan" accept="image/*" multiple class="hidden">
+
+<div id="busy"><div><span class="spin"></span><span id="busyText">Working…</span></div></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+// ---------------------------------------------------------------------------
+// Basics
+// ---------------------------------------------------------------------------
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const isNative = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function native(method, opts = {}, plugin = 'Printer') {
+  if (isNative) return Capacitor.nativePromise(plugin, method, opts);
+  return (window.mockNative || (async () => ({})))(plugin, method, opts);
+}
+
+let toastTimer;
+function toast(msg, ms = 2600) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), ms);
+}
+function busy(on, text) {
+  $('#busy').classList.toggle('on', !!on);
+  if (text) $('#busyText').textContent = text;
+}
+function errMsg(e) {
+  return (e && (e.message || e.errorMessage)) || String(e || 'Something went wrong');
+}
+function fmtSize(n) {
+  if (n == null) return '';
+  if (n < 1024) return n + ' B';
+  if (n < 1048576) return (n / 1024).toFixed(0) + ' KB';
+  return (n / 1048576).toFixed(1) + ' MB';
+}
+function fmtTime(t) {
+  const d = new Date(t), now = new Date();
+  const same = d.toDateString() === now.toDateString();
+  const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  return same ? 'Today, ' + time : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + time;
+}
+
+// Settings, remembered between uses
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('pp.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('pp.' + k, JSON.stringify(v)); } catch {} },
+};
+const opts = Object.assign({
+  'ph.paper': 'A4', 'ph.per': '1', 'ph.orient': 'portrait', 'ph.fit': 'fill', 'ph.margin': 'small',
+  'ph.repeat': false, 'ph.rotate': true, 'ph.bw': false,
+  'doc.paper': '', 'doc.color': '', 'doc.orient': 'portrait', 'doc.scale': '100', 'doc.grid': true,
+  'web.paper': '', 'web.color': '',
+  'scan.paper': 'A4', 'scan.filter': 'enhance',
+}, store.get('opts', {}));
+const optListeners = {};
+function setOpt(k, v) {
+  opts[k] = v;
+  store.set('opts', opts);
+  syncOpts();
+  (optListeners[k.split('.')[0]] || []).forEach((f) => f(k));
+}
+function onOpts(prefix, f) { (optListeners[prefix] ||= []).push(f); }
+function syncOpts() {
+  $$('[data-opt]').forEach((seg) => {
+    const k = seg.dataset.opt;
+    $$('button', seg).forEach((b) => b.classList.toggle('on', b.dataset.v === String(opts[k])));
+  });
+  $$('[data-chk]').forEach((c) => { c.checked = !!opts[c.dataset.chk]; });
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-opt] button');
+  if (b) setOpt(b.closest('[data-opt]').dataset.opt, b.dataset.v);
+});
+document.addEventListener('change', (e) => {
+  if (e.target.matches('[data-chk]')) setOpt(e.target.dataset.chk, e.target.checked);
+});
+
+// ---------------------------------------------------------------------------
+// Navigation (Android back button goes back a screen)
+// ---------------------------------------------------------------------------
+const screenHooks = {};
+let current = 'home';
+function show(id, push = true) {
+  if (id === current) return;
+  $$('.screen').forEach((s) => s.classList.toggle('on', s.id === id));
+  const prev = current;
+  current = id;
+  if (push) history.pushState({ screen: id }, '');
+  if (screenHooks[id]) screenHooks[id](prev);
+}
+history.replaceState({ screen: 'home' }, '');
+window.addEventListener('popstate', (e) => {
+  const id = (e.state && e.state.screen) || 'home';
+  if (current === 'editor' && editorState) editorState.cancel();
+  show(id, false);
+});
+function goBack() { history.back(); }
+function goBackAndWait() {
+  return new Promise((res) => { window.addEventListener('popstate', () => setTimeout(res, 0), { once: true }); history.back(); });
+}
+let autoPick = true; // open the picker when a screen is opened from Home
+document.addEventListener('click', (e) => {
+  const g = e.target.closest('[data-go]');
+  if (g) show(g.dataset.go);
+  if (e.target.closest('.back')) goBack();
+});
+
+// ---------------------------------------------------------------------------
+// Files: moving bytes to the native side (chunked base64)
+// ---------------------------------------------------------------------------
+function b64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+async function saveTemp(blob, name) {
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  const CH = 3 * 1024 * 1024; // multiple of 3 so base64 chunks join cleanly
+  let path = null;
+  for (let i = 0; i < Math.max(buf.length, 1); i += CH) {
+    const r = await native('writeTemp', { data: b64(buf.subarray(i, i + CH)), name, append: i > 0, path });
+    path = r.path;
+  }
+  return path;
+}
+function fileUrl(path) {
+  return isNative ? Capacitor.convertFileSrc(path) : path;
+}
+async function blobFromPath(path) {
+  const r = await fetch(fileUrl(path));
+  if (!r.ok) throw new Error('Could not read the file');
+  return r.blob();
+}
+function canvasBlob(canvas, type = 'image/jpeg', q = 0.92) {
+  return new Promise((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error('Out of memory'))), type, q));
+}
+function pick(input) {
+  return new Promise((resolve) => {
+    const el = $(input);
+    el.value = '';
+    el.onchange = () => resolve([...el.files]);
+    el.click();
+  });
+}
+
+// ---------------------------------------------------------------------------
+// History of prints (+ live status from Android's print queue)
+// ---------------------------------------------------------------------------
+let history_ = store.get('history', []);
+function addHistory(entry) {
+  history_.unshift(Object.assign({ time: Date.now() }, entry));
+  history_ = history_.slice(0, 40);
+  store.set('history', history_);
+  renderJobs();
+  pollJobs();
+}
+const stateText = { preparing: 'Preparing', queued: 'Queued', printing: 'Printing', blocked: 'Needs attention', done: 'Printed', failed: 'Failed', cancelled: 'Cancelled', unknown: '…', sent: 'Sent' };
+let liveJobs = {};
+function renderJobs() {
+  const el = $('#jobs');
+  if (!history_.length) {
+    el.innerHTML = '<div class="empty small">Nothing printed yet.</div>';
+    return;
+  }
+  el.innerHTML = history_.slice(0, 12).map((h, i) => {
+    const live = h.jobId && liveJobs[h.jobId];
+    const st = live ? live.state : (h.state || 'sent');
+    const actions = live && (st === 'failed' || st === 'blocked') ? `<button class="linkbtn small" data-job="${esc(h.jobId)}" data-act="retry">Retry</button>` :
+      live && ['queued', 'printing', 'preparing'].includes(st) ? `<button class="linkbtn small" data-job="${esc(h.jobId)}" data-act="cancel">Cancel</button>` : '';
+    return `<div class="job"><div class="meta"><b>${esc(h.label)}</b><span class="muted small">${esc(h.kind)} · ${fmtTime(h.time)}</span></div>${actions}<span class="pill ${esc(st)}">${esc(stateText[st] || st)}</span></div>`;
+  }).join('');
+}
+let pollTimer;
+async function pollJobs() {
+  clearTimeout(pollTimer);
+  try {
+    const r = await native('getJobs');
+    liveJobs = {};
+    (r.jobs || []).forEach((j) => (liveJobs[j.id] = j));
+    let changed = false;
+    history_.forEach((h) => {
+      const l = h.jobId && liveJobs[h.jobId];
+      if (l && l.state !== h.state) { h.state = l.state; changed = true; }
+    });
+    if (changed) store.set('history', history_);
+  } catch {}
+  renderJobs();
+  const active = Object.values(liveJobs).some((j) => ['preparing', 'queued', 'printing', 'blocked'].includes(j.state));
+  if (active && current === 'home') pollTimer = setTimeout(pollJobs, 3000);
+}
+$('#jobs').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-job]');
+  if (!b) return;
+  try {
+    await native('jobAction', { id: b.dataset.job, action: b.dataset.act });
+    toast(b.dataset.act === 'cancel' ? 'Cancelling…' : 'Trying again…');
+  } catch (err) { toast(errMsg(err)); }
+  setTimeout(pollJobs, 800);
+});
+$('#clearHistory').onclick = () => { history_ = []; store.set('history', []); renderJobs(); };
+screenHooks.home = () => { pollJobs(); native('clearTemp').catch(() => {}); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { pollJobs(); checkShared(); } });
+
+async function sendToPrinter(method, args, label, kind) {
+  const r = await native(method, Object.assign({ name: label }, args));
+  addHistory({ label, kind, jobId: r && r.id, state: 'preparing' });
+  return r;
+}
+
+// ---------------------------------------------------------------------------
+// PHOTOS
+// ---------------------------------------------------------------------------
+const MM = { A4: [210, 297], Letter: [215.9, 279.4], A5: [148, 210], '4x6': [101.6, 152.4] };
+let photos = []; // {name, blob, url}
+function addPhotos(list) {
+  list.filter((f) => /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|heic|bmp)$/i.test(f.name || ''))
+    .forEach((f) => photos.push({ name: f.name || 'Photo', blob: f, url: URL.createObjectURL(f) }));
+  renderPhotoThumbs();
+  schedulePreview();
+}
+function renderPhotoThumbs() {
+  $('#photoThumbs').innerHTML = photos.map((p, i) => `<div class="thumb"><img src="${p.url}" alt=""><button class="x" data-rm="${i}" aria-label="Remove">×</button></div>`).join('') +
+    `<button class="addtile" id="photoAdd">+ Add</button>`;
+  $('#photoPrint').disabled = !photos.length;
+}
+$('#photoThumbs').addEventListener('click', async (e) => {
+  const rm = e.target.closest('[data-rm]');
+  if (rm) {
+    const [p] = photos.splice(+rm.dataset.rm, 1);
+    URL.revokeObjectURL(p.url);
+    renderPhotoThumbs();
+    schedulePreview();
+  } else if (e.target.closest('#photoAdd')) {
+    addPhotos(await pick('#filePhotos'));
+  }
+});
+screenHooks.photos = async (prev) => {
+  renderPhotoThumbs();
+  schedulePreview();
+  if (prev === 'home' && !photos.length && autoPick) addPhotos(await pick('#filePhotos'));
+};
+onOpts('ph', (k) => {
+  if (k === 'ph.per' && ['passport', 'stamp'].includes(opts['ph.per']) && !opts['ph.repeat']) { opts['ph.repeat'] = true; store.set('opts', opts); syncOpts(); }
+  schedulePreview();
+});
+
+function photoLayout() {
+  const [pw0, ph0] = MM[opts['ph.paper']] || MM.A4;
+  const land = opts['ph.orient'] === 'landscape';
+  const pw = land ? ph0 : pw0, ph = land ? pw0 : ph0;
+  const margin = { none: 0, small: 5, large: 12 }[opts['ph.margin']] ?? 5;
+  const gap = opts['ph.margin'] === 'none' ? 0 : margin === 5 ? 3 : 6;
+  const cells = [];
+  const per = opts['ph.per'];
+  if (per === 'passport' || per === 'stamp') {
+    const [cw, chh] = per === 'passport' ? [35, 45] : [25, 30];
+    const m = Math.max(margin, 4), g = Math.max(gap, 2);
+    const cols = Math.max(1, Math.floor((pw - 2 * m + g) / (cw + g)));
+    const rows = Math.max(1, Math.floor((ph - 2 * m + g) / (chh + g)));
+    const ox = (pw - (cols * cw + (cols - 1) * g)) / 2, oy = m;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push({ x: ox + c * (cw + g), y: oy + r * (chh + g), w: cw, h: chh, cut: true });
+  } else {
+    const n = +per;
+    let [cols, rows] = { 1: [1, 1], 2: [1, 2], 4: [2, 2], 6: [2, 3], 9: [3, 3] }[n] || [1, 1];
+    if (land) [cols, rows] = [rows, cols];
+    const cw = (pw - 2 * margin - (cols - 1) * gap) / cols, chh = (ph - 2 * margin - (rows - 1) * gap) / rows;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push({ x: margin + c * (cw + gap), y: margin + r * (chh + gap), w: cw, h: chh });
+  }
+  return { pw, ph, cells, land };
+}
+function photoPages() {
+  const { cells } = photoLayout();
+  const pages = [];
+  if (opts['ph.repeat']) photos.forEach((p) => pages.push(cells.map(() => p)));
+  else for (let i = 0; i < photos.length; i += cells.length) pages.push(photos.slice(i, i + cells.length));
+  return pages;
+}
+const bitmapCache = new Map();
+async function bitmapFor(p, maxSide) {
+  const key = p.url + '|' + maxSide;
+  if (bitmapCache.has(key)) return bitmapCache.get(key);
+  const full = await createImageBitmap(p.blob);
+  let bmp = full;
+  const s = maxSide / Math.max(full.width, full.height);
+  if (s < 1) {
+    bmp = await createImageBitmap(full, { resizeWidth: Math.round(full.width * s), resizeHeight: Math.round(full.height * s), resizeQuality: 'high' });
+    full.close();
+  }
+  if (maxSide <= 600) bitmapCache.set(key, bmp);
+  return bmp;
+}
+async function renderPhotoPage(pageItems, dpi, maxSide) {
+  const L = photoLayout();
+  const k = dpi / 25.4;
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(L.pw * k);
+  cv.height = Math.round(L.ph * k);
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.imageSmoothingQuality = 'high';
+  for (let i = 0; i < pageItems.length; i++) {
+    const cell = L.cells[i];
+    const bmp = await bitmapFor(pageItems[i], maxSide);
+    const cx = cell.x * k, cy = cell.y * k, cw = cell.w * k, chh = cell.h * k;
+    let iw = bmp.width, ih = bmp.height;
+    const rotate = opts['ph.rotate'] && (iw > ih) !== (cw > chh) && Math.abs(iw - ih) > 4 && Math.abs(cw - chh) > 4;
+    if (rotate) [iw, ih] = [ih, iw];
+    const s = opts['ph.fit'] === 'fill' ? Math.max(cw / iw, chh / ih) : Math.min(cw / iw, chh / ih);
+    const dw = iw * s, dh = ih * s;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(cx, cy, cw, chh);
+    ctx.clip();
+    ctx.translate(cx + cw / 2, cy + chh / 2);
+    if (rotate) ctx.rotate(Math.PI / 2);
+    const w = rotate ? dh : dw, h = rotate ? dw : dh;
+    ctx.drawImage(bmp, -w / 2, -h / 2, w, h);
+    ctx.restore();
+    if (cell.cut) { // faint cut guides for passport/stamp sheets
+      ctx.strokeStyle = '#d0d0d0';
+      ctx.lineWidth = Math.max(1, k * 0.15);
+      ctx.strokeRect(cx, cy, cw, chh);
+    }
+    if (maxSide > 600) bmp.close();
+  }
+  if (opts['ph.bw']) {
+    const id = ctx.getImageData(0, 0, cv.width, cv.height), d = id.data;
+    for (let i = 0; i < d.length; i += 4) { const y = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; d[i] = d[i + 1] = d[i + 2] = y; }
+    ctx.putImageData(id, 0, 0);
+  }
+  return cv;
+}
+let previewTimer, previewSeq = 0;
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(renderPreview, 120);
+}
+async function renderPreview() {
+  const seq = ++previewSeq;
+  const box = $('#photoPages');
+  const pages = photoPages();
+  $('#photoPageCount').textContent = pages.length ? pages.length + (pages.length === 1 ? ' page' : ' pages') : '';
+  if (!pages.length) { box.innerHTML = '<div class="empty small" style="width:100%">Add photos to see the pages.</div>'; return; }
+  const out = [];
+  for (const pg of pages.slice(0, 20)) {
+    try { out.push(await renderPhotoPage(pg, 30, 500)); } catch { /* skip unreadable photo */ }
+    if (seq !== previewSeq) return;
+  }
+  box.innerHTML = '';
+  out.forEach((c) => box.appendChild(c));
+  if (pages.length > 20) box.insertAdjacentHTML('beforeend', `<div class="muted small" style="align-self:center;flex:0 0 auto">+${pages.length - 20} more</div>`);
+}
+$('#photoPrint').onclick = async () => {
+  const pages = photoPages();
+  if (!pages.length) return;
+  try {
+    const paths = [];
+    for (let i = 0; i < pages.length; i++) {
+      busy(true, `Preparing page ${i + 1} of ${pages.length}…`);
+      const cv = await renderPhotoPage(pages[i], 220, 3000);
+      paths.push(await saveTemp(await canvasBlob(cv), `page${i + 1}.jpg`));
+      cv.width = cv.height = 0;
+    }
+    busy(true, 'Opening print screen…');
+    const L = photoLayout();
+    const label = photos.length === 1 ? photos[0].name : `${photos.length} photos`;
+    await sendToPrinter('printImages', { paths, paper: opts['ph.paper'], landscape: L.land, fit: 'fit', photo: true, color: opts['ph.bw'] ? 'bw' : 'color' }, label, 'Photos');
+  } catch (e) { toast(errMsg(e)); }
+  busy(false);
+};
+
+// ---------------------------------------------------------------------------
+// DOCUMENTS
+// ---------------------------------------------------------------------------
+let doc = null; // {name, kind, blob?, path?, html?, sheets?}
+function kindOf(name, mime) {
+  const n = (name || '').toLowerCase();
+  mime = mime || '';
+  if (mime === 'application/pdf' || n.endsWith('.pdf')) return 'pdf';
+  if (n.endsWith('.docx') || mime.includes('wordprocessingml')) return 'docx';
+  if (n.endsWith('.doc') || mime === 'application/msword') return 'doc';
+  if (/\.(xlsx|xls|xlsm|ods|csv)$/.test(n) || mime.includes('spreadsheet') || mime.includes('ms-excel') || mime === 'text/csv') return 'sheet';
+  if (/\.html?$/.test(n) || mime === 'text/html') return 'html';
+  if (/^image\//.test(mime) || /\.(jpe?g|png|webp|gif|heic|bmp)$/.test(n)) return 'image';
+  if (/^text\//.test(mime) || /\.(txt|text|log|md|json|xml)$/.test(n)) return 'text';
+  return 'unknown';
+}
+const badge = { pdf: ['PDF', '#c0392b'], docx: ['DOCX', '#2b5797'], sheet: ['XLS', '#1e7145'], html: ['HTML', '#b26a00'], text: ['TXT', '#6b7a90'] };
+let libs = {};
+function loadScript(src) {
+  return libs[src] ||= new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = res;
+    s.onerror = () => rej(new Error('Could not load ' + src));
+    document.head.appendChild(s);
+  });
+}
+async function openDoc({ name, blob, path, mime, size }) {
+  const kind = kindOf(name, mime || (blob && blob.type));
+  if (kind === 'image') { autoPick = false; show('photos'); autoPick = true; addPhotos([blob || new File([await blobFromPath(path)], name, { type: mime })]); return; }
+  if (kind === 'doc') { toast('Old .doc files aren\'t supported. Open it in Word or Google Docs and use Share → PrintPal, or save it as .docx or PDF.', 6000); return; }
+  if (kind === 'unknown') { toast('This file type can\'t be printed here. Try saving it as PDF first.', 4500); return; }
+  busy(true, 'Opening…');
+  try {
+    doc = { name, kind, blob, path, size: size ?? (blob && blob.size) };
+    if (kind !== 'pdf') {
+      const b = blob || await blobFromPath(path);
+      if (kind === 'docx') {
+        await loadScript('mammoth.js');
+        const r = await mammoth.convertToHtml({ arrayBuffer: await b.arrayBuffer() });
+        doc.html = r.value || '<p></p>';
+      } else if (kind === 'sheet') {
+        await loadScript('xlsx.js');
+        const wb = XLSX.read(new Uint8Array(await b.arrayBuffer()), { type: 'array', cellDates: true });
+        doc.sheets = wb.SheetNames.map((n) => {
+          const ws = wb.Sheets[n];
+          const full = XLSX.utils.sheet_to_html(ws, { header: '', footer: '' });
+          const m = full.match(/<table[\s\S]*<\/table>/i);
+          return { name: n, html: m ? m[0] : '', on: true, empty: !ws['!ref'] };
+        }).filter((s) => !s.empty);
+        if (!doc.sheets.length) throw new Error('This spreadsheet looks empty');
+        doc.sheets.forEach((s, i) => (s.on = i === 0 || doc.sheets.length <= 3));
+      } else if (kind === 'text') {
+        doc.text = await b.text();
+      } else if (kind === 'html') {
+        doc.raw = await b.text();
+      }
+    }
+    renderDoc();
+  } catch (e) {
+    doc = null;
+    renderDoc();
+    toast('Couldn\'t open this file: ' + errMsg(e), 5000);
+  }
+  busy(false);
+}
+function stripScripts(html) {
+  const t = document.createElement('template');
+  t.innerHTML = html;
+  t.content.querySelectorAll('script,iframe,object,embed,link,meta,base').forEach((n) => n.remove());
+  t.content.querySelectorAll('*').forEach((n) => [...n.attributes].forEach((a) => { if (/^on/i.test(a.name) || /^\s*javascript:/i.test(a.value)) n.removeAttribute(a.name); }));
+  return t.innerHTML;
+}
+function docBodyHtml() {
+  if (!doc) return '';
+  if (doc.kind === 'docx') return `<div class="docx">${stripScripts(doc.html)}</div>`;
+  if (doc.kind === 'text') return `<pre>${esc(doc.text)}</pre>`;
+  if (doc.kind === 'html') return stripScripts(doc.raw);
+  if (doc.kind === 'sheet') {
+    const on = doc.sheets.filter((s) => s.on);
+    return on.map((s, i) => `${on.length > 1 || doc.sheets.length > 1 ? `<h3 class="sheetname">${esc(s.name)}</h3>` : ''}${s.html}`).join('<div class="pb"></div>');
+  }
+  return '';
+}
+function docPrintHtml() {
+  const land = opts['doc.orient'] === 'landscape';
+  const scale = +opts['doc.scale'] / 100;
+  const grid = opts['doc.grid'];
+  const size = opts['doc.paper'] ? `${opts['doc.paper']} ${land ? 'landscape' : 'portrait'}` : (land ? 'landscape' : 'auto');
+  const css = `@page{size:${size};margin:14mm}
+  body{font-family:Calibri,Carlito,"Segoe UI",Roboto,Arial,sans-serif;font-size:11pt;line-height:1.35;color:#000;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  img{max-width:100%}
+  pre{white-space:pre-wrap;word-wrap:break-word;font:10pt/1.4 "Roboto Mono",Consolas,monospace;margin:0}
+  .docx p{margin:0 0 8pt} .docx table{border-collapse:collapse;margin:6pt 0} .docx td,.docx th{border:1px solid #888;padding:3pt 5pt;vertical-align:top}
+  .docx h1{font-size:20pt}.docx h2{font-size:16pt}.docx h3{font-size:13pt}
+  table{border-collapse:collapse}
+  .sheet table{font-size:${(10 * scale).toFixed(1)}pt;zoom:1}
+  .sheet td,.sheet th{padding:1.5pt 4pt;${grid ? 'border:0.6pt solid #999;' : ''}white-space:nowrap;vertical-align:bottom}
+  .sheetname{font-size:12pt;margin:0 0 6pt}
+  .pb{break-after:page;page-break-after:always}
+  tr{break-inside:avoid}`;
+  const cls = doc.kind === 'sheet' ? 'sheet' : '';
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(doc.name)}</title><style>${css}</style></head><body class="${cls}">${docBodyHtml()}</body></html>`;
+}
+function renderDoc() {
+  const has = !!doc;
+  $('#docEmpty').classList.toggle('hidden', has);
+  $('#docFile').classList.toggle('hidden', !has);
+  $('#docOptsCard').classList.toggle('hidden', !has);
+  $('#docPrint').disabled = !has;
+  const isSheet = has && doc.kind === 'sheet';
+  $('#docSheetsCard').classList.toggle('hidden', !isSheet || doc.sheets.length < 2);
+  $('#docScaleField').classList.toggle('hidden', !isSheet);
+  $('#docGridField').classList.toggle('hidden', !isSheet);
+  $('#docOrientField').classList.toggle('hidden', !has || doc.kind === 'pdf');
+  $('#docPrevCard').classList.toggle('hidden', !has || doc.kind === 'pdf');
+  if (!has) return;
+  const [t, c] = badge[doc.kind] || ['FILE', '#6b7a90'];
+  $('#docBadge').textContent = t;
+  $('#docBadge').style.background = c;
+  $('#docName').textContent = doc.name;
+  $('#docInfo').textContent = [fmtSize(doc.size), doc.kind === 'pdf' ? 'Preview on the next screen' : isSheet ? `${doc.sheets.length} sheet${doc.sheets.length > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ');
+  if (isSheet) {
+    $('#docSheets').innerHTML = doc.sheets.map((s, i) => `<label class="toggle"><span>${esc(s.name)}</span><input type="checkbox" data-sheet="${i}" ${s.on ? 'checked' : ''}></label>`).join('');
+  }
+  if (doc.kind !== 'pdf') {
+    const prev = $('#docPrev');
+    prev.className = 'docprev' + (isSheet ? ' sheet' : '');
+    prev.innerHTML = docBodyHtml().slice(0, 400000);
+  }
+}
+$('#docSheets').addEventListener('change', (e) => {
+  const i = e.target.dataset.sheet;
+  if (i == null) return;
+  doc.sheets[+i].on = e.target.checked;
+  renderDoc();
+});
+onOpts('doc', () => {});
+async function pickDoc() {
+  const [f] = await pick('#fileDoc');
+  if (f) openDoc({ name: f.name, blob: f, mime: f.type });
+}
+$('#docPick').onclick = pickDoc;
+$('#docChange').onclick = pickDoc;
+screenHooks.docs = (prev) => { renderDoc(); if (prev === 'home' && !doc && autoPick) pickDoc(); };
+$('#docPrint').onclick = async () => {
+  if (!doc) return;
+  const common = { paper: opts['doc.paper'], color: opts['doc.color'], landscape: opts['doc.orient'] === 'landscape' && doc.kind !== 'pdf' };
+  try {
+    if (doc.kind === 'pdf') {
+      busy(true, 'Opening print screen…');
+      if (!doc.path) doc.path = await saveTemp(doc.blob, doc.name);
+      await sendToPrinter('printPdf', { path: doc.path, paper: common.paper, color: common.color }, doc.name, 'PDF');
+    } else {
+      if (doc.kind === 'sheet' && !doc.sheets.some((s) => s.on)) { toast('Pick at least one sheet'); return; }
+      busy(true, 'Opening print screen…');
+      await sendToPrinter('printHtml', Object.assign({ html: docPrintHtml() }, common), doc.name, { docx: 'Word', sheet: 'Spreadsheet', text: 'Text', html: 'HTML' }[doc.kind]);
+    }
+  } catch (e) { toast(errMsg(e), 5000); }
+  busy(false);
+};
+
+// ---------------------------------------------------------------------------
+// WEB PAGE
+// ---------------------------------------------------------------------------
+let webRecent = store.get('webRecent', []);
+function normUrl(s) {
+  s = (s || '').trim();
+  const m = s.match(/https?:\/\/[^\s<>"']+/i);
+  if (m) return m[0];
+  if (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(s)) return 'https://' + s;
+  return '';
+}
+function renderWebRecent() {
+  $('#webRecentCard').classList.toggle('hidden', !webRecent.length);
+  $('#webRecent').innerHTML = webRecent.map((u, i) => `<div class="item"><span class="meta">${esc(u)}</span><button class="linkbtn small" data-url="${i}">Use</button></div>`).join('');
+}
+$('#webRecent').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-url]');
+  if (b) $('#webUrl').value = webRecent[+b.dataset.url];
+});
+$('#webPaste').onclick = async () => {
+  try {
+    const t = await navigator.clipboard.readText();
+    const u = normUrl(t);
+    if (u) $('#webUrl').value = u; else toast('No link on the clipboard');
+  } catch { toast('Long-press the box and choose Paste'); }
+};
+screenHooks.web = () => { renderWebRecent(); if (!$('#webUrl').value) setTimeout(() => $('#webUrl').focus(), 250); };
+$('#webPrint').onclick = async () => {
+  const url = normUrl($('#webUrl').value);
+  if (!url) { toast('Enter a web address'); return; }
+  $('#webUrl').value = url;
+  webRecent = [url, ...webRecent.filter((u) => u !== url)].slice(0, 8);
+  store.set('webRecent', webRecent);
+  renderWebRecent();
+  busy(true, 'Loading the page…');
+  try {
+    let host = url;
+    try { host = new URL(url).hostname.replace(/^www\./, ''); } catch {}
+    await sendToPrinter('printUrl', { url, paper: opts['web.paper'], color: opts['web.color'] }, host, 'Web page');
+    await sleep(1200);
+  } catch (e) { toast(errMsg(e), 5000); }
+  busy(false);
+};
+
+// ---------------------------------------------------------------------------
+// SCAN
+// ---------------------------------------------------------------------------
+let scanPages = []; // {blob, url}
+function defaultScanName() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `Scan ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}.${p(d.getMinutes())}`;
+}
+function renderScan() {
+  $('#scanPages').innerHTML = scanPages.map((p, i) => `<div class="spage"><img src="${p.url}" alt=""><div class="ctl"><button data-mv="${i}" data-d="-1" aria-label="Move left">‹</button><span class="n">${i + 1}</span><button data-mv="${i}" data-d="1" aria-label="Move right">›</button></div><div class="ctl" style="justify-content:center"><button data-del="${i}" aria-label="Delete">🗑</button></div></div>`).join('');
+  $('#scanEmpty').classList.toggle('hidden', !!scanPages.length);
+  $('#scanCount').textContent = scanPages.length ? scanPages.length + (scanPages.length === 1 ? ' page' : ' pages') : '';
+  ['#scanSave', '#scanShare', '#scanPrint'].forEach((s) => ($(s).disabled = !scanPages.length));
+}
+$('#scanPages').addEventListener('click', (e) => {
+  const mv = e.target.closest('[data-mv]'), del = e.target.closest('[data-del]');
+  if (mv) {
+    const i = +mv.dataset.mv, j = i + +mv.dataset.d;
+    if (j < 0 || j >= scanPages.length) return;
+    [scanPages[i], scanPages[j]] = [scanPages[j], scanPages[i]];
+    renderScan();
+  } else if (del) {
+    const [p] = scanPages.splice(+del.dataset.del, 1);
+    URL.revokeObjectURL(p.url);
+    renderScan();
+  }
+});
+screenHooks.scan = () => {
+  if (!$('#scanName').value) $('#scanName').value = defaultScanName();
+  renderScan();
+};
+async function takePhoto() {
+  if (!isNative) return (await pick('#fileScan'))[0];
+  let r;
+  try {
+    r = await native('takePhoto', { quality: 92, correctOrientation: true, saveToGallery: false }, 'Camera');
+  } catch (e) {
+    if (/cancel/i.test(errMsg(e))) return null;
+    try { r = await native('getPhoto', { quality: 92, resultType: 'uri', source: 'CAMERA', correctOrientation: true, saveToGallery: false }, 'Camera'); }
+    catch (e2) { if (/cancel/i.test(errMsg(e2))) return null; throw e2; }
+  }
+  const src = r.webPath || (r.uri && Capacitor.convertFileSrc(r.uri)) || (r.path && Capacitor.convertFileSrc(r.path));
+  const res = await fetch(src);
+  return res.blob();
+}
+$('#scanCamera').onclick = async () => {
+  try {
+    const b = await takePhoto();
+    if (b) await editScan(b);
+  } catch (e) { toast(errMsg(e)); }
+};
+$('#scanGallery').onclick = async () => {
+  const files = await pick('#fileScan');
+  for (const f of files) { if (!(await editScan(f))) break; }
+};
+async function scanPdf() {
+  busy(true, 'Making the PDF…');
+  const paths = [];
+  for (let i = 0; i < scanPages.length; i++) paths.push(await saveTemp(scanPages[i].blob, `scan${i + 1}.jpg`));
+  const name = ($('#scanName').value.trim() || defaultScanName()).replace(/\.pdf$/i, '');
+  const r = await native('makePdf', { paths, name, paper: opts['scan.paper'] });
+  return { path: r.path, name: name + '.pdf', paths };
+}
+$('#scanSave').onclick = async () => {
+  try {
+    const p = await scanPdf();
+    const r = await native('saveToDownloads', { path: p.path, name: p.name, mime: 'application/pdf' });
+    toast('Saved to ' + (r.where || 'Downloads'), 4000);
+  } catch (e) { toast(errMsg(e)); }
+  busy(false);
+};
+$('#scanShare').onclick = async () => {
+  try {
+    const p = await scanPdf();
+    await native('shareFile', { path: p.path, mime: 'application/pdf' });
+  } catch (e) { toast(errMsg(e)); }
+  busy(false);
+};
+$('#scanPrint').onclick = async () => {
+  try {
+    const p = await scanPdf();
+    busy(true, 'Opening print screen…');
+    await sendToPrinter('printPdf', { path: p.path, paper: opts['scan.paper'] === 'Letter' ? 'Letter' : 'A4' }, p.name, 'Scan');
+  } catch (e) { toast(errMsg(e)); }
+  busy(false);
+};
+
+// ---- Scan editor: corners, perspective correction, clean-up filters ----
+let editorState = null;
+function editScan(blob) {
+  return new Promise(async (resolve) => {
+    busy(true, 'Loading…');
+    let bmp;
+    try {
+      const full = await createImageBitmap(blob);
+      const s = Math.min(1, 3000 / Math.max(full.width, full.height));
+      bmp = s < 1 ? await createImageBitmap(full, { resizeWidth: Math.round(full.width * s), resizeHeight: Math.round(full.height * s), resizeQuality: 'high' }) : full;
+      if (s < 1) full.close();
+    } catch (e) { busy(false); toast('Couldn\'t open that image'); resolve(false); return; }
+    busy(false);
+    let src = bmp; // current (possibly rotated) source
+    let srcCanvas = toCanvas(src);
+    let corners;
+    const stage = $('#editStage'), cv = $('#editCanvas');
+    let view = { s: 1, ox: 0, oy: 0 };
+    const handles = [0, 1, 2, 3].map(() => { const h = document.createElement('div'); h.className = 'handle'; stage.appendChild(h); return h; });
+
+    function toCanvas(b) { const c = document.createElement('canvas'); c.width = b.width; c.height = b.height; c.getContext('2d').drawImage(b, 0, 0); return c; }
+    function resetCorners() {
+      const W = srcCanvas.width, H = srcCanvas.height, d = autoQuad(srcCanvas);
+      corners = d || [[0, 0], [W, 0], [W, H], [0, H]];
+    }
+    function layout() {
+      const r = stage.getBoundingClientRect(), pad = 26;
+      const s = Math.min((r.width - 2 * pad) / srcCanvas.width, (r.height - 2 * pad) / srcCanvas.height);
+      const w = srcCanvas.width * s, h = srcCanvas.height * s;
+      view = { s, ox: (r.width - w) / 2, oy: (r.height - h) / 2 };
+      const dpr = window.devicePixelRatio || 1;
+      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+      cv.style.width = w + 'px'; cv.style.height = h + 'px';
+      cv.style.left = view.ox + 'px'; cv.style.top = view.oy + 'px';
+      const ctx = cv.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(srcCanvas, 0, 0, cv.width, cv.height);
+      draw();
+    }
+    function draw() {
+      const pts = corners.map(([x, y]) => [view.ox + x * view.s, view.oy + y * view.s]);
+      $('#editPoly').setAttribute('points', pts.map((p) => p.join(',')).join(' '));
+      handles.forEach((h, i) => { h.style.left = pts[i][0] + 'px'; h.style.top = pts[i][1] + 'px'; });
+    }
+    handles.forEach((h, i) => {
+      h.onpointerdown = (e) => {
+        h.setPointerCapture(e.pointerId);
+        const move = (ev) => {
+          const x = (ev.clientX - stage.getBoundingClientRect().left - view.ox) / view.s;
+          const y = (ev.clientY - stage.getBoundingClientRect().top - view.oy) / view.s;
+          corners[i] = [Math.max(0, Math.min(srcCanvas.width, x)), Math.max(0, Math.min(srcCanvas.height, y))];
+          draw();
+        };
+        h.onpointermove = move;
+        h.onpointerup = h.onpointercancel = () => { h.onpointermove = null; };
+      };
+    });
+    function cleanup() {
+      handles.forEach((h) => h.remove());
+      window.removeEventListener('resize', layout);
+      editorState = null;
+      if (bmp.close) bmp.close();
+    }
+    editorState = {
+      cancel() { cleanup(); resolve(false); },
+    };
+    $('#edCancel').onclick = () => goBack();
+    $('#edReset').onclick = () => { corners = [[0, 0], [srcCanvas.width, 0], [srcCanvas.width, srcCanvas.height], [0, srcCanvas.height]]; draw(); };
+    $('#edRotate').onclick = () => {
+      const c = document.createElement('canvas');
+      c.width = srcCanvas.height; c.height = srcCanvas.width;
+      const x = c.getContext('2d');
+      x.translate(c.width, 0); x.rotate(Math.PI / 2); x.drawImage(srcCanvas, 0, 0);
+      const H = srcCanvas.height;
+      // rotate corners clockwise too, keeping TL,TR,BR,BL order
+      corners = corners.map(([px, py]) => [H - py, px]);
+      corners = [corners[3], corners[0], corners[1], corners[2]];
+      srcCanvas = c;
+      layout();
+    };
+    $('#edDone').onclick = async () => {
+      busy(true, 'Straightening…');
+      await sleep(30);
+      try {
+        const out = warp(srcCanvas, corners);
+        applyFilter(out, opts['scan.filter']);
+        const b = await canvasBlob(out, 'image/jpeg', 0.9);
+        scanPages.push({ blob: b, url: URL.createObjectURL(b) });
+        out.width = out.height = 0;
+        cleanup();
+        busy(false);
+        renderScan();
+        await goBackAndWait();
+        resolve(true);
+      } catch (e) { busy(false); toast(errMsg(e)); }
+    };
+    resetCorners();
+    show('editor');
+    window.addEventListener('resize', layout);
+    requestAnimationFrame(layout);
+  });
+}
+
+// Very light automatic page-edge guess: finds the bright region that differs from the border.
+function autoQuad(canvas) {
+  try {
+    const W = canvas.width, H = canvas.height, s = 160 / Math.max(W, H);
+    const w = Math.max(8, Math.round(W * s)), h = Math.max(8, Math.round(H * s));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const x = c.getContext('2d'); x.drawImage(canvas, 0, 0, w, h);
+    const d = x.getImageData(0, 0, w, h).data;
+    const L = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) L[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+    // Otsu threshold
+    const hist = new Array(256).fill(0); L.forEach((v) => hist[v | 0]++);
+    let sum = 0; for (let i = 0; i < 256; i++) sum += i * hist[i];
+    let sB = 0, wB = 0, best = 0, th = 128;
+    for (let t = 0; t < 256; t++) { wB += hist[t]; if (!wB) continue; const wF = w * h - wB; if (!wF) break; sB += t * hist[t]; const mB = sB / wB, mF = (sum - sB) / wF, v = wB * wF * (mB - mF) ** 2; if (v > best) { best = v; th = t; } }
+    let n = 0, minS = 1e9, maxS = -1e9, minD = 1e9, maxD = -1e9, tl, tr, br, bl;
+    for (let y = 0; y < h; y++) for (let xx = 0; xx < w; xx++) {
+      if (L[y * w + xx] <= th) continue;
+      n++;
+      const S = xx + y, D = xx - y;
+      if (S < minS) { minS = S; tl = [xx, y]; }
+      if (S > maxS) { maxS = S; br = [xx, y]; }
+      if (D > maxD) { maxD = D; tr = [xx, y]; }
+      if (D < minD) { minD = D; bl = [xx, y]; }
+    }
+    const frac = n / (w * h);
+    if (frac < 0.15 || frac > 0.97) return null;
+    const q = [tl, tr, br, bl].map(([a, b]) => [a / s, b / s]);
+    // sanity: area must be a reasonable part of the photo
+    const area = Math.abs(q.reduce((acc, p, i) => { const r = q[(i + 1) % 4]; return acc + p[0] * r[1] - r[0] * p[1]; }, 0) / 2);
+    if (area < 0.2 * W * H) return null;
+    return q;
+  } catch { return null; }
+}
+
+// Solve the homography mapping the output rectangle onto the chosen quadrilateral
+function homography(src, dst) {
+  const A = [], b = [];
+  for (let i = 0; i < 4; i++) {
+    const [x, y] = src[i], [u, v] = dst[i];
+    A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); b.push(u);
+    A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); b.push(v);
+  }
+  for (let c = 0; c < 8; c++) { // Gaussian elimination
+    let p = c; for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]]; [b[c], b[p]] = [b[p], b[c]];
+    for (let r = c + 1; r < 8; r++) { const f = A[r][c] / A[c][c]; for (let k = c; k < 8; k++) A[r][k] -= f * A[c][k]; b[r] -= f * b[c]; }
+  }
+  const h = new Array(8);
+  for (let r = 7; r >= 0; r--) { let s = b[r]; for (let k = r + 1; k < 8; k++) s -= A[r][k] * h[k]; h[r] = s / A[r][r]; }
+  return [...h, 1];
+}
+function warp(srcCanvas, q) {
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  let W = Math.max(dist(q[0], q[1]), dist(q[3], q[2])), H = Math.max(dist(q[0], q[3]), dist(q[1], q[2]));
+  const cap = 2600 / Math.max(W, H);
+  if (cap < 1) { W *= cap; H *= cap; }
+  W = Math.max(16, Math.round(W)); H = Math.max(16, Math.round(H));
+  const full = [[0, 0], [srcCanvas.width, 0], [srcCanvas.width, srcCanvas.height], [0, srcCanvas.height]];
+  const out = document.createElement('canvas'); out.width = W; out.height = H;
+  const isFull = q.every((p, i) => dist(p, full[i]) < 2);
+  if (isFull) { out.getContext('2d').drawImage(srcCanvas, 0, 0, W, H); return out; }
+  const sw = srcCanvas.width, sh = srcCanvas.height;
+  const sd = srcCanvas.getContext('2d').getImageData(0, 0, sw, sh).data;
+  const oimg = out.getContext('2d').createImageData(W, H), od = oimg.data;
+  const m = homography([[0, 0], [W, 0], [W, H], [0, H]], q);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const den = m[6] * x + m[7] * y + m[8];
+      let u = (m[0] * x + m[1] * y + m[2]) / den, v = (m[3] * x + m[4] * y + m[5]) / den;
+      if (u < 0) u = 0; if (v < 0) v = 0; if (u > sw - 1.001) u = sw - 1.001; if (v > sh - 1.001) v = sh - 1.001;
+      const x0 = u | 0, y0 = v | 0, fx = u - x0, fy = v - y0;
+      const i00 = (y0 * sw + x0) * 4, i10 = i00 + 4, i01 = i00 + sw * 4, i11 = i01 + 4;
+      const o = (y * W + x) * 4;
+      for (let c = 0; c < 3; c++) {
+        const top = sd[i00 + c] + (sd[i10 + c] - sd[i00 + c]) * fx;
+        const bot = sd[i01 + c] + (sd[i11 + c] - sd[i01 + c]) * fx;
+        od[o + c] = top + (bot - top) * fy;
+      }
+      od[o + 3] = 255;
+    }
+  }
+  out.getContext('2d').putImageData(oimg, 0, 0);
+  return out;
+}
+function applyFilter(canvas, mode) {
+  if (mode === 'original') return;
+  const ctx = canvas.getContext('2d'), W = canvas.width, H = canvas.height;
+  const img = ctx.getImageData(0, 0, W, H), d = img.data, N = W * H;
+  const L = new Uint8ClampedArray(N);
+  for (let i = 0; i < N; i++) L[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+  if (mode === 'bw') {
+    // Adaptive threshold using an integral image: crisp text even with uneven light
+    const ii = new Float64Array((W + 1) * (H + 1));
+    for (let y = 0; y < H; y++) { let row = 0; for (let x = 0; x < W; x++) { row += L[y * W + x]; ii[(y + 1) * (W + 1) + x + 1] = ii[y * (W + 1) + x + 1] + row; } }
+    const r = Math.max(8, Math.round(Math.max(W, H) / 40));
+    for (let y = 0; y < H; y++) {
+      const y0 = Math.max(0, y - r), y1 = Math.min(H, y + r + 1);
+      for (let x = 0; x < W; x++) {
+        const x0 = Math.max(0, x - r), x1 = Math.min(W, x + r + 1);
+        const s = ii[y1 * (W + 1) + x1] - ii[y0 * (W + 1) + x1] - ii[y1 * (W + 1) + x0] + ii[y0 * (W + 1) + x0];
+        const mean = s / ((x1 - x0) * (y1 - y0));
+        const v = L[y * W + x] < mean * 0.86 ? 0 : 255;
+        const o = (y * W + x) * 4; d[o] = d[o + 1] = d[o + 2] = v;
+      }
+    }
+  } else {
+    // Levels: push the paper to white and the ink to dark
+    const hist = new Uint32Array(256); for (let i = 0; i < N; i++) hist[L[i]]++;
+    const pct = (p) => { let acc = 0; for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= p * N) return i; } return 255; };
+    const lo = pct(0.02), hi = Math.max(lo + 30, pct(mode === 'grey' ? 0.95 : 0.85));
+    const lut = new Uint8ClampedArray(256);
+    for (let i = 0; i < 256; i++) { const t = Math.max(0, Math.min(1, (i - lo) / (hi - lo))); lut[i] = 255 * (mode === 'enhance' ? Math.pow(t, 1.15) : t); }
+    for (let i = 0; i < N; i++) {
+      const o = i * 4;
+      if (mode === 'grey') { d[o] = d[o + 1] = d[o + 2] = lut[L[i]]; }
+      else {
+        // scale colour channels by the same factor as luminance so colours stay natural
+        const f = L[i] ? lut[L[i]] / L[i] : 0;
+        d[o] = d[o] * f; d[o + 1] = d[o + 1] * f; d[o + 2] = d[o + 2] * f;
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// ---------------------------------------------------------------------------
+// SETUP
+// ---------------------------------------------------------------------------
+const PLUGINS = [
+  ['Mopria Print Service', 'org.mopria.printplugin', 'Works with most Wi-Fi printers'],
+  ['HP Print Service Plugin', 'com.hp.android.printservice', 'HP printers'],
+  ['Canon Print Service', 'jp.co.canon.android.printservice.plugin', 'Canon printers'],
+  ['Epson Print Enabler', 'com.epson.mobilephone.android.epsonprintserviceplugin', 'Epson printers'],
+  ['Brother Print Service Plugin', 'com.brother.printservice', 'Brother printers'],
+];
+screenHooks.setup = async () => {
+  let services = [];
+  try { services = (await native('getServices')).services || []; } catch {}
+  $('#services').innerHTML = services.length
+    ? services.map((s) => `<div class="svc"><span class="dot"></span><span>${esc(s.name)}</span></div>`).join('') + '<p class="small muted" style="margin:6px 0 0">Installed doesn\'t always mean switched on. Check in Print settings.</p>'
+    : '<p class="small" style="margin:0">No print service found. Install <b>Mopria Print Service</b> below, then switch it on in Print settings.</p>';
+  const have = new Set(services.map((s) => s.package));
+  $('#plugins').innerHTML = PLUGINS.map(([n, p, d]) => `<div class="item"><div class="meta"><b style="font-weight:550">${esc(n)}</b><br><span class="muted small">${esc(d)}</span></div>${have.has(p) ? '<span class="pill done">Installed</span>' : `<button class="btn small ghost" data-store="${esc(p)}">Get</button>`}</div>`).join('');
+};
+$('#plugins').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-store]');
+  if (b) native('openStore', { package: b.dataset.store });
+});
+$('#openPrintSettings').onclick = () => native('openPrintSettings');
+
+// ---------------------------------------------------------------------------
+// Things shared from other apps ("Share → PrintPal")
+// ---------------------------------------------------------------------------
+let checkingShare = false;
+async function checkShared() {
+  if (checkingShare) return;
+  checkingShare = true;
+  autoPick = false;
+  try {
+    const r = await native('getShared');
+    const items = (r.items || []).filter((i) => i && i.path);
+    (r.items || []).filter((i) => i && i.error).forEach((i) => toast(i.error, 4000));
+    if (items.length) {
+      const images = items.filter((i) => kindOf(i.name, i.mime) === 'image');
+      if (images.length === items.length) {
+        const files = [];
+        for (const i of images) files.push(new File([await blobFromPath(i.path)], i.name, { type: i.mime || 'image/jpeg' }));
+        photos.forEach((p) => URL.revokeObjectURL(p.url));
+        photos = [];
+        show('photos');
+        addPhotos(files);
+      } else {
+        const first = items.find((i) => kindOf(i.name, i.mime) !== 'image') || items[0];
+        if (items.length > 1) toast('Opened the first file. Share them one at a time to print the others.', 4500);
+        show('docs');
+        await openDoc({ name: first.name, path: first.path, mime: first.mime, size: first.size });
+      }
+    } else if (r.text) {
+      const u = normUrl(r.text);
+      if (u) { show('web'); $('#webUrl').value = u; }
+      else { show('docs'); doc = { name: 'Shared text', kind: 'text', text: r.text, size: r.text.length }; renderDoc(); }
+    }
+  } catch {}
+  autoPick = true;
+  checkingShare = false;
+}
+if (isNative) {
+  try { Capacitor.nativeCallback('Printer', 'addListener', { eventName: 'shared' }, () => checkShared()); } catch {}
+}
+
+// ---------------------------------------------------------------------------
+syncOpts();
+renderJobs();
+pollJobs();
+checkShared();
+</script>
+</body>
+</html>

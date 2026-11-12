@@ -1,0 +1,15 @@
+{
+  "appId": "com.vinay.printpal",
+  "appName": "PrintPal",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}
